@@ -781,42 +781,42 @@
     // Build the request payload by combining error information with other data
     // such as user-agent and locale, `metaData` and settings.
     var payload = {
-      notifierVersion: NOTIFIER_VERSION,
+      "notifierVersion": NOTIFIER_VERSION,
 
-      apiKey: apiKey,
-      projectRoot: getSetting("projectRoot") || window.location.protocol + "//" + window.location.host,
-      context: getSetting("context") || window.location.pathname,
-      user: getSetting("user"),
-      metaData: merge(merge({}, getSetting("metaData")), metaData),
-      releaseStage: releaseStage,
-      appVersion: getSetting("appVersion"),
+      "apiKey": apiKey,
+      "projectRoot": getSetting("projectRoot") || window.location.protocol + "//" + window.location.host,
+      "context": getSetting("context") || window.location.pathname,
+      "user": getSetting("user"),
+      "metaData": merge(merge({}, getSetting("metaData")), metaData),
+      "releaseStage": releaseStage,
+      "appVersion": getSetting("appVersion"),
 
-      url: window.location.href,
-      userAgent: navigator.userAgent,
-      language: navigator.language || navigator.userLanguage,
+      "url": window.location.href,
+      "userAgent": navigator.userAgent,
+      "language": navigator.language || navigator.userLanguage,
 
-      severity: details.severity,
+      "severity": details.severity,
 
-      name: details.name,
-      message: details.message,
-      stacktrace: details.stacktrace,
-      file: details.file,
-      lineNumber: details.lineNumber,
-      columnNumber: details.columnNumber,
-      breadcrumbs: breadcrumbs,
-      payloadVersion: "3"
+      "name": details.name,
+      "message": details.message,
+      "stacktrace": details.stacktrace,
+      "file": details.file,
+      "lineNumber": details.lineNumber,
+      "columnNumber": details.columnNumber,
+      "breadcrumbs": breadcrumbs,
+      "payloadVersion": "3"
     };
 
     // Run any `beforeNotify` function
     var beforeNotify = self.beforeNotify;
     if (typeof(beforeNotify) === "function") {
-      var retVal = beforeNotify(payload, payload.metaData);
+      var retVal = beforeNotify(payload, payload["metaData"]);
       if (retVal === false) {
         return;
       }
     }
 
-    if (payload.lineNumber === 0 && (/Script error\.?/).test(payload.message)) {
+    if (payload["lineNumber"] === 0 && (/Script error\.?/).test(payload["message"])) {
       return log("Ignoring cross-domain script error. See https://bugsnag.com/docs/notifiers/js/cors");
     }
 
