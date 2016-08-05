@@ -11,6 +11,7 @@
 
 // The `Bugsnag` object is the only globally exported variable
 (function (window, old) {
+  var BUGSNAG_TESTING = window['BUGSNAG_TESTING'];
   var self = {},
     lastScript,
     previousNotification,
@@ -126,6 +127,10 @@
   //   the value will be used as the `message` field of `metaData`.
   //
   // - `metadata` (optional, object) - Additional information about the breadcrumb. Values limited to 140 characters.
+  /**
+   * @param {!Object|string} value
+   * @param {Object=} metaData
+   */
   self.leaveBreadcrumb = function(value, metaData) {
     // default crumb
     var crumb = {
@@ -179,7 +184,11 @@
   // If you call wrap twice on the same function, it'll give you back the
   // same wrapped function. This lets removeEventListener to continue to
   // work.
-  function wrap(_super) {
+  /**
+   * @param {Object} _super
+   * @param {...*} var_args
+   */
+  function wrap(_super, var_args) {
     try {
       if (typeof _super !== "function") {
         return _super;
@@ -226,7 +235,7 @@
 
   // Setup breadcrumbs for click events
   function trackClicks() {
-    if(!getBreadcrumbSetting("autoBreadcrumbsClicks", true)) {
+    if(!getBreadcrumbSetting("autoBreadcrumbsClicks")) {
       return;
     }
 
@@ -579,10 +588,17 @@
   // Deeply serialize an object into a query string. We use the PHP-style
   // nested object syntax, `nested[keys]=val`, to support heirachical
   // objects. Similar to jQuery's `$.param` method.
+  /**
+   * @param {Object} obj
+   * @param {string=} prefix
+   * @param {number=} depth
+   * @return {string}
+   */
   function serialize(obj, prefix, depth) {
-    var maxDepth = getSetting("maxDepth", maxPayloadDepth);
+    var maxDepth = /** @type {number} */ (getSetting("maxDepth", maxPayloadDepth));
+    prefix = prefix || '';
 
-    if (depth >= maxDepth) {
+    if (typeof depth === 'number' && /** @type {number} */ (depth) >= maxDepth) {
       return encodeURIComponent(prefix) + "=[RECURSIVE]";
     }
     depth = depth + 1 || 1;
@@ -639,6 +655,12 @@
   // Deep-merge the `source` object into the `target` object and return
   // the `target`. Properties in source that will overwrite those in target.
   // Similar to jQuery's `$.extend` method.
+  /**
+   * @param {Object} target
+   * @param {Object=} source
+   * @param {number=} depth
+   * @return {Object|string}
+   */
   function merge(target, source, depth) {
     if (source == null) {
       return target;
@@ -714,6 +736,11 @@
   // Get configuration settings from either `self` (the `Bugsnag` object)
   // or `data` (the `data-*` attributes).
   var data;
+  /**
+   * @param {string} name
+   * @param {*=} fallback
+   * @return {*}
+   */
   function getSetting(name, fallback) {
     data = data || getData(thisScript);
     var setting = self[name] !== undefined ? self[name] : data[name.toLowerCase()];
@@ -787,7 +814,9 @@
       "projectRoot": getSetting("projectRoot") || window.location.protocol + "//" + window.location.host,
       "context": getSetting("context") || window.location.pathname,
       "user": getSetting("user"),
-      "metaData": merge(merge({}, getSetting("metaData")), metaData),
+      "metaData": merge(/** @type {Object} */ (
+          merge({}, /** @type {Object} */ (
+              getSetting("metaData")))), metaData),
       "releaseStage": releaseStage,
       "appVersion": getSetting("appVersion"),
 
@@ -847,11 +876,12 @@
       generated = "<generated-ie>\n";
       var functionStack = [];
       try {
-        var curr = arguments.callee.caller.caller;
+        var curr = eval('arguments.callee.caller.caller');
         while (curr && functionStack.length < MAX_FAKE_STACK_SIZE) {
-          var fn = FUNCTION_REGEX.test(curr.toString()) ? RegExp.$1 || ANONYMOUS_FUNCTION_PLACEHOLDER : ANONYMOUS_FUNCTION_PLACEHOLDER;
+          var match = curr.toString().match(FUNCTION_REGEX);
+          var fn = match && match[1] || ANONYMOUS_FUNCTION_PLACEHOLDER;
           functionStack.push(fn);
-          curr = curr.caller;
+          curr = eval('curr.caller');
         }
       } catch (e) {
         log(e);
@@ -1082,21 +1112,4 @@
   trackNavigation();
 
   window.Bugsnag = self;
-  // If people are using a javascript loader, we should integrate with it.
-  // We don't want to defer instrumenting their code with callbacks however,
-  // so we slightly abuse the intent and continue with our plan of polyfilling
-  // the browser whether or not they ever actually require the module.
-  // This has the nice side-effect of continuing to work when people are using
-  // AMD but loading Bugsnag via a CDN.
-  // It has the not-so-nice side-effect of polluting the global namespace, but
-  // you can easily call Bugsnag.noConflict() to fix that.
-  if (typeof define === "function" && define.amd) {
-    // AMD
-    define([], function () {
-      return self;
-    });
-  } else if (typeof module === "object" && typeof module.exports === "object") {
-    // CommonJS/Browserify
-    module.exports = self;
-  }
 })(window, window.Bugsnag);
