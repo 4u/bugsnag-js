@@ -1,3 +1,5 @@
+goog.provide('Bugsnag');
+
 //
 // **Bugsnag.js** is the official JavaScript notifier for
 // [Bugsnag](https://bugsnag.com).
@@ -10,7 +12,14 @@
 //
 
 // The `Bugsnag` object is the only globally exported variable
-(function (window, old) {
+  
+  
+/**
+ * @param {Window} window
+ * @param {Object=} old
+ * @return {!Object}
+ */
+Bugsnag.install = function(window, old) {
   var BUGSNAG_TESTING = window['BUGSNAG_TESTING'];
   var self = {},
     lastScript,
@@ -1111,5 +1120,5 @@
   trackConsoleLog();
   trackNavigation();
 
-  window.Bugsnag = self;
-})(window, window.Bugsnag);
+  return self;
+};
