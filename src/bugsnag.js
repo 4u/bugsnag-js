@@ -315,9 +315,9 @@ Bugsnag.install = function(window, old) {
 
     function trackLog(severity, args) {
       self.leaveBreadcrumb({
-        type: "log",
-        name: "Console output",
-        metaData: {
+        'type': "log",
+        'name': "Console output",
+        'metaData': {
           'severity': severity,
           'message': Array.prototype.slice.call(args).join(", ")
         }
@@ -1173,7 +1173,7 @@ Bugsnag.install = function(window, old) {
 
   // Leave the initial breadcrumb
   if (getSetting("autoBreadcrumbs", true)) {
-    self.leaveBreadcrumb({ type: "navigation", name: "Bugsnag Loaded" });
+    self.leaveBreadcrumb({ 'type': "navigation", 'name': "Bugsnag Loaded" });
   }
 
   return self;
