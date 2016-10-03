@@ -12,8 +12,8 @@ goog.provide('Bugsnag');
 //
 
 // The `Bugsnag` object is the only globally exported variable
-  
-  
+
+
 /**
  * @param {Window} window
  * @param {Object=} old
@@ -22,20 +22,20 @@ goog.provide('Bugsnag');
 Bugsnag.install = function(window, old) {
   var BUGSNAG_TESTING = window['BUGSNAG_TESTING'];
   var self = {},
-    lastScript,
-    previousNotification,
-    shouldCatch = true,
-    ignoreOnError = 0,
-    breadcrumbs = [],
+      lastScript,
+      previousNotification,
+      shouldCatch = true,
+      ignoreOnError = 0,
+      breadcrumbs = [],
 
-    // We've seen cases where individual clients can infinite loop sending us errors
-    // (in some cases 10,000+ errors per page). This limit is at the point where
-    // you've probably learned everything useful there is to debug the problem,
-    // and we're happy to under-estimate the count to save the client (and Bugsnag's) resources.
-    eventsRemaining = 10,
-    // The default depth of attached metadata which is parsed before truncation. It
-    // is configurable via the `maxDepth` setting.
-    maxPayloadDepth = 5;
+  // We've seen cases where individual clients can infinite loop sending us errors
+  // (in some cases 10,000+ errors per page). This limit is at the point where
+  // you've probably learned everything useful there is to debug the problem,
+  // and we're happy to under-estimate the count to save the client (and Bugsnag's) resources.
+      eventsRemaining = 10,
+  // The default depth of attached metadata which is parsed before truncation. It
+  // is configurable via the `maxDepth` setting.
+      maxPayloadDepth = 5;
 
   // #### Bugsnag.noConflict
   //
@@ -88,6 +88,18 @@ Bugsnag.install = function(window, old) {
     if (!exception) {
       return;
     }
+
+    if (typeof exception === "string") {
+      log(
+          "Bugsnag.notifyException() was called with a string. Expected instance of Error. " +
+          "To send a custom message instantiate a new Error or use Bugsnag.notify('<string>')." +
+          " see https://docs.bugsnag.com/platforms/browsers/#reporting-handled-exceptions"
+      );
+      // pass through to notify()
+      self.notify.apply(null, arguments);
+      return;
+    }
+
     if (name && typeof name !== "string") {
       metaData = name;
       name = undefined;
@@ -141,30 +153,46 @@ Bugsnag.install = function(window, old) {
    * @param {Object=} metaData
    */
   self.leaveBreadcrumb = function(value, metaData) {
+    var DEFAULT_TYPE = "manual";
+
     // default crumb
     var crumb = {
-      type: "manual",
+      type: DEFAULT_TYPE,
       name: "Manual",
       timestamp: new Date().getTime()
     };
 
     switch (typeof value) {
-    case "object":
-      crumb = merge(crumb, value);
-      break;
-    case "string":
-      if (metaData && typeof metaData === "object") {
-        crumb = merge(crumb, {
-          name: value,
-          metaData: metaData
-        });
-      } else {
-        crumb.metaData = { message: value };
+      case "object":
+        crumb = merge(crumb, value);
+        break;
+      case "string":
+        if (metaData && typeof metaData === "object") {
+          crumb = merge(crumb, {
+            name: value,
+            metaData: metaData
+          });
+        } else {
+          crumb.metaData = { message: value };
+        }
+        break;
+      default:
+        log("expecting 1st argument to leaveBreadcrumb to be a 'string' or 'object', got " + typeof value);
+        return;
+    }
+
+    // Validate breadcrumb type and replace invalid type with default.
+    var VALID_TYPES = [DEFAULT_TYPE, "error", "log", "navigation", "process", "request", "state", "user"];
+    var validType = false;
+    for (var i = 0; i < VALID_TYPES.length; i++) {
+      if (VALID_TYPES[i] === crumb.type) {
+        validType = true;
+        break;
       }
-      break;
-    default:
-      log("expecting 1st argument to leaveBreadcrumb to be a 'string' or 'object', got " + typeof value);
-      return;
+    }
+    if (!validType) {
+      log("Converted invalid breadcrumb type '" + crumb.type + "' to '" + DEFAULT_TYPE + "'");
+      crumb.type = DEFAULT_TYPE;
     }
 
     var lastCrumb = breadcrumbs.slice(-1)[0];
@@ -179,9 +207,9 @@ Bugsnag.install = function(window, old) {
 
   function breadcrumbsAreEqual(crumb1, crumb2) {
     return crumb1 && crumb2 &&
-      crumb1.type === crumb2.type &&
-      crumb1.name === crumb2.name &&
-      isEqual(crumb1.metaData, crumb2.metaData);
+        crumb1.type === crumb2.type &&
+        crumb1.name === crumb2.name &&
+        isEqual(crumb1.metaData, crumb2.metaData);
   }
 
   // Return a function acts like the given function, but reports
@@ -233,8 +261,8 @@ Bugsnag.install = function(window, old) {
       }
       return _super.bugsnag;
 
-    // This can happen if _super is not a normal javascript function.
-    // For example, see https://github.com/bugsnag/bugsnag-js/issues/28
+      // This can happen if _super is not a normal javascript function.
+      // For example, see https://github.com/bugsnag/bugsnag-js/issues/28
     } catch (e) {
       return _super;
     }
@@ -252,13 +280,26 @@ Bugsnag.install = function(window, old) {
       return;
     }
 
+
     var callback = function(event) {
+      var targetText, targetSelector;
+      // Cross origin security might prevent us from accessing the event target
+
+      try {
+        targetText = nodeText(event.target);
+        targetSelector = nodeLabel(event.target);
+      } catch (e) {
+        targetText = "[hidden]";
+        targetSelector = "[hidden]";
+        log("Cross domain error when tracking click event. See https://docs.bugsnag.com/platforms/browsers/faq/#3-cross-origin-script-errors");
+      }
+
       self.leaveBreadcrumb({
         type: "user",
         name: "UI click",
         metaData: {
-          targetText: nodeText(event.target),
-          targetSelector: nodeLabel(event.target)
+          targetText: targetText,
+          targetSelector: targetSelector
         }
       });
     };
@@ -268,7 +309,7 @@ Bugsnag.install = function(window, old) {
 
   // Setup breadcrumbs for console.log, console.warn, console.error
   function trackConsoleLog(){
-    if(!window.console || typeof window.console.log !== "function" || !getBreadcrumbSetting("autoBreadcrumbsConsole")) {
+    if(!getBreadcrumbSetting("autoBreadcrumbsConsole")) {
       return;
     }
 
@@ -281,6 +322,11 @@ Bugsnag.install = function(window, old) {
           message: Array.prototype.slice.call(args).join(", ")
         }
       });
+    }
+
+    // make an empty object onto which we attach our fake logging functions
+    if (typeof window.console === "undefined") {
+      window.console = /** @type {!Console} */ ({});
     }
 
     enhance(console, "log", function() {
@@ -318,8 +364,8 @@ Bugsnag.install = function(window, old) {
 
     function buildHashChange(event) {
       var oldURL = event.oldURL,
-        newURL = event.newURL,
-        metaData = {};
+          newURL = event.newURL,
+          metaData = {};
 
       // not supported in old browsers
       if (oldURL && newURL) {
@@ -470,7 +516,7 @@ Bugsnag.install = function(window, old) {
   // Set up default notifier settings.
   var DEFAULT_BASE_ENDPOINT = "https://notify.bugsnag.com/";
   var DEFAULT_NOTIFIER_ENDPOINT = DEFAULT_BASE_ENDPOINT + "js";
-  var NOTIFIER_VERSION = "3.0.0-rc.1";
+  var NOTIFIER_VERSION = "3.0.4";
 
   // Keep a reference to the currently executing script in the DOM.
   // We'll use this later to extract settings from attributes.
@@ -484,12 +530,12 @@ Bugsnag.install = function(window, old) {
   //  })
   function enhance(object, property, newFunction) {
     var oldFunction = object[property];
-    if (typeof oldFunction === "function") {
-      object[property] = function() {
-        newFunction.apply(this, arguments);
+    object[property] = function() {
+      newFunction.apply(this, arguments);
+      if (typeof oldFunction === "function") {
         oldFunction.apply(this, arguments);
-      };
-    }
+      }
+    };
   }
 
   // Simple logging function that wraps `console.log` if available.
@@ -512,6 +558,11 @@ Bugsnag.install = function(window, old) {
   // extract text content from a element
   function nodeText(el) {
     var text = el.textContent || el.innerText || "";
+
+    if (el.type === "submit" || el.type === "button") {
+      text = el.value;
+    }
+
     text = text.replace(/^\s+|\s+$/g, ""); // trim whitespace
     return truncate(text, 140);
   }
@@ -814,6 +865,10 @@ Bugsnag.install = function(window, old) {
       previousNotification = deduplicate;
     }
 
+    var defaultEventMetaData = {
+      device: { time: (new Date()).getTime() }
+    };
+
     // Build the request payload by combining error information with other data
     // such as user-agent and locale, `metaData` and settings.
     var payload = {
@@ -824,7 +879,7 @@ Bugsnag.install = function(window, old) {
       "context": getSetting("context") || window.location.pathname,
       "user": getSetting("user"),
       "metaData": merge(/** @type {Object} */ (
-          merge({}, /** @type {Object} */ (
+          merge(defaultEventMetaData, /** @type {Object} */ (
               getSetting("metaData")))), metaData),
       "releaseStage": releaseStage,
       "appVersion": getSetting("appVersion"),
@@ -855,7 +910,7 @@ Bugsnag.install = function(window, old) {
     }
 
     if (payload["lineNumber"] === 0 && (/Script error\.?/).test(payload["message"])) {
-      return log("Ignoring cross-domain script error. See https://bugsnag.com/docs/notifiers/js/cors");
+      return log("Ignoring cross-domain or eval script error. See https://docs.bugsnag.com/platforms/browsers/faq/#3-cross-origin-script-errors");
     }
 
     // Make the HTTP request
@@ -924,7 +979,7 @@ Bugsnag.install = function(window, old) {
         }
         return ret + ">";
       } else {
-         // e.g. #document
+        // e.g. #document
         return target.nodeName;
       }
     }
@@ -943,8 +998,8 @@ Bugsnag.install = function(window, old) {
   if (!window.atob) {
     shouldCatch = false;
 
-  // Disable catching on browsers that support HTML5 ErrorEvents properly.
-  // This lets debug on unhandled exceptions work.
+    // Disable catching on browsers that support HTML5 ErrorEvents properly.
+    // This lets debug on unhandled exceptions work.
   } else if (window.ErrorEvent) {
     try {
       if (new window.ErrorEvent("test").colno === 0) {
@@ -987,11 +1042,7 @@ Bugsnag.install = function(window, old) {
 
       return function bugsnag(message, url, lineNo, charNo, exception) {
         var shouldNotify = getSetting("autoNotify", true);
-        var metaData = {
-          device: {
-            time: new Date().getTime()
-          }
-        };
+        var metaData = {};
 
         // IE 6+ support.
         if (!charNo && window.event) {
@@ -1119,6 +1170,11 @@ Bugsnag.install = function(window, old) {
   trackClicks();
   trackConsoleLog();
   trackNavigation();
+
+  // Leave the initial breadcrumb
+  if (getSetting("autoBreadcrumbs", true)) {
+    self.leaveBreadcrumb({ type: "navigation", name: "Bugsnag Loaded" });
+  }
 
   return self;
 };

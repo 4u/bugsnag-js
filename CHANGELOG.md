@@ -1,7 +1,27 @@
 Changelog
 =========
 
-3.0.0-rc.1 (2016-07-22)
+3.0.4 (2016-09-09)
+-----
+
+- Create "Bugsnag loaded" breadcrumb [#179](https://github.com/bugsnag/bugsnag-js/pull/179)
+
+3.0.3 (2016-09-08)
+-----
+
+- Added void return type (#178)
+  [Ole Martin Handeland](https://github.com/olemartinorg)
+  [#178](https://github.com/bugsnag/bugsnag-js/pull/178)
+- Improve notifyException definition (#175)
+  [Delisa Mason](https://github.com/kattrali)
+  [#175](https://github.com/bugsnag/bugsnag-js/pull/175)
+
+3.0.1 (2016-08-08)
+-----
+
+Minor README changes.
+
+3.0.0 (2016-08-05)
 -----
 
 This release adds support for automatic and custom breadcrumb tracking.
