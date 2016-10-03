@@ -110,13 +110,13 @@ Bugsnag.install = function(window, old) {
     addScriptToMetaData(metaData);
 
     sendToBugsnag({
-      name: name || exception.name,
-      message: exception.message || exception.description,
-      stacktrace: stacktraceFromException(exception) || generateStacktrace(),
-      file: exception.fileName || exception.sourceURL,
-      lineNumber: exception.lineNumber || exception.line,
-      columnNumber: exception.columnNumber ? exception.columnNumber + 1 : undefined,
-      severity: severity || "warning"
+      'name': name || exception.name,
+      'message': exception.message || exception.description,
+      'stacktrace': stacktraceFromException(exception) || generateStacktrace(),
+      'file': exception.fileName || exception.sourceURL,
+      'lineNumber': exception.lineNumber || exception.line,
+      'columnNumber': exception.columnNumber ? exception.columnNumber + 1 : undefined,
+      'severity': severity || "warning"
     }, metaData);
   };
 
@@ -126,14 +126,14 @@ Bugsnag.install = function(window, old) {
   // without requiring an exception.
   self.notify = function (name, message, metaData, severity) {
     sendToBugsnag({
-      name: name,
-      message: message,
-      stacktrace: generateStacktrace(),
+      'name': name,
+      'message': message,
+      'stacktrace': generateStacktrace(),
       // These are defaults so that 'bugsnag.notify()' calls show up in old IE,
       // newer browsers get a legit stacktrace from generateStacktrace().
-      file: window.location.toString(),
-      lineNumber: 1,
-      severity: severity || "warning"
+      'file': window.location.toString(),
+      'lineNumber': 1,
+      'severity': severity || "warning"
     }, metaData);
   };
 
@@ -318,8 +318,8 @@ Bugsnag.install = function(window, old) {
         type: "log",
         name: "Console output",
         metaData: {
-          severity: severity,
-          message: Array.prototype.slice.call(args).join(", ")
+          'severity': severity,
+          'message': Array.prototype.slice.call(args).join(", ")
         }
       });
     }
@@ -369,64 +369,64 @@ Bugsnag.install = function(window, old) {
 
       // not supported in old browsers
       if (oldURL && newURL) {
-        metaData.from = parseHash(oldURL);
-        metaData.to = parseHash(newURL);
+        metaData['from'] = parseHash(oldURL);
+        metaData['to'] = parseHash(newURL);
       } else {
-        metaData.to = location.hash;
+        metaData['to'] = location.hash;
       }
 
       return {
-        type: "navigation",
-        name: "Hash changed",
-        metaData: metaData
+        'type': "navigation",
+        'name': "Hash changed",
+        'metaData': metaData
       };
     }
 
     function buildPopState() {
       return {
-        type: "navigation",
-        name: "Navigated back"
+        'type': "navigation",
+        'name': "Navigated back"
       };
     }
 
     function buildPageHide() {
       return {
-        type: "navigation",
-        name: "Page hidden"
+        'type': "navigation",
+        'name': "Page hidden"
       };
     }
 
     function buildPageShow() {
       return {
-        type: "navigation",
-        name: "Page shown"
+        'type': "navigation",
+        'name': "Page shown"
       };
     }
 
     function buildLoad() {
       return {
-        type: "navigation",
-        name: "Page loaded"
+        'type': "navigation",
+        'name': "Page loaded"
       };
     }
 
     function buildDOMContentLoaded() {
       return {
-        type: "navigation",
-        name: "DOMContentLoaded"
+        'type': "navigation",
+        'name': "DOMContentLoaded"
       };
     }
 
     function buildStateChange(name, state, title, url) {
       var currentPath = location.pathname + location.search + location.hash;
       return {
-        type: "navigation",
-        name: "History " + name,
-        metaData: {
-          from: currentPath,
-          to: url || currentPath,
-          prevState: history.state,
-          nextState: state
+        'type': "navigation",
+        'name': "History " + name,
+        'metaData': {
+          'from': currentPath,
+          'to': url || currentPath,
+          'prevState': history.state,
+          'nextState': state
         }
       };
     }
@@ -498,9 +498,9 @@ Bugsnag.install = function(window, old) {
     var script = getCurrentScript();
 
     if (script) {
-      metaData.script = {
-        src: script.src,
-        content: getSetting("inlineScript", true) ? script.innerHTML : ""
+      metaData['script'] = {
+        'src': script.src,
+        'content': getSetting("inlineScript", true) ? script.innerHTML : ""
       };
     }
   }
@@ -858,7 +858,7 @@ Bugsnag.install = function(window, old) {
     // Don't send multiple copies of the same error.
     // This fixes a problem when a client goes into an infinite loop,
     // and starts wasting all their bandwidth sending messages to bugsnag.
-    var deduplicate = [details.name, details.message, details.stacktrace].join("|");
+    var deduplicate = [details['name'], details['message'], details['stacktrace']].join("|");
     if (deduplicate === previousNotification) {
       return;
     } else {
@@ -866,7 +866,7 @@ Bugsnag.install = function(window, old) {
     }
 
     var defaultEventMetaData = {
-      device: { time: (new Date()).getTime() }
+      'device': { 'time': (new Date()).getTime() }
     };
 
     // Build the request payload by combining error information with other data
@@ -888,14 +888,14 @@ Bugsnag.install = function(window, old) {
       "userAgent": navigator.userAgent,
       "language": navigator.language || navigator.userLanguage,
 
-      "severity": details.severity,
+      "severity": details['severity'],
 
-      "name": details.name,
-      "message": details.message,
-      "stacktrace": details.stacktrace,
-      "file": details.file,
-      "lineNumber": details.lineNumber,
-      "columnNumber": details.columnNumber,
+      "name": details['name'],
+      "message": details['message'],
+      "stacktrace": details['stacktrace'],
+      "file": details['file'],
+      "lineNumber": details['lineNumber'],
+      "columnNumber": details['columnNumber'],
       "breadcrumbs": breadcrumbs,
       "payloadVersion": "3"
     };
@@ -1055,25 +1055,25 @@ Bugsnag.install = function(window, old) {
         if (shouldNotify && !ignoreOnError) {
           var name = exception && exception.name || "window.onerror";
           sendToBugsnag({
-            name: name,
-            message: message,
-            file: url,
-            lineNumber: lineNo,
-            columnNumber: charNo,
-            stacktrace: (exception && stacktraceFromException(exception)) || generateStacktrace(),
-            severity: "error"
+            'name': name,
+            'message': message,
+            'file': url,
+            'lineNumber': lineNo,
+            'columnNumber': charNo,
+            'stacktrace': (exception && stacktraceFromException(exception)) || generateStacktrace(),
+            'severity': "error"
           }, metaData);
 
           // add the error to the breadcrumbs
           if (getBreadcrumbSetting("autoBreadcrumbsErrors")) {
             self.leaveBreadcrumb({
-              type: "error",
-              name: name,
-              metaData: {
-                severity: "error",
-                file: url,
-                message: message,
-                line: lineNo
+              'type': "error",
+              'name': name,
+              'metaData': {
+                'severity': "error",
+                'file': url,
+                'message': message,
+                'line': lineNo
               }
             });
           }
