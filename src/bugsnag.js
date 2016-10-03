@@ -173,7 +173,7 @@ Bugsnag.install = function(window, old) {
             metaData: metaData
           });
         } else {
-          crumb.metaData = { message: value };
+          crumb['metaData'] = { message: value };
         }
         break;
       default:
@@ -207,9 +207,9 @@ Bugsnag.install = function(window, old) {
 
   function breadcrumbsAreEqual(crumb1, crumb2) {
     return crumb1 && crumb2 &&
-        crumb1.type === crumb2.type &&
-        crumb1.name === crumb2.name &&
-        isEqual(crumb1.metaData, crumb2.metaData);
+        crumb1['type'] === crumb2['type'] &&
+        crumb1['name'] === crumb2['name'] &&
+        isEqual(crumb1['metaData'], crumb2['metaData']);
   }
 
   // Return a function acts like the given function, but reports
@@ -295,11 +295,11 @@ Bugsnag.install = function(window, old) {
       }
 
       self.leaveBreadcrumb({
-        type: "user",
-        name: "UI click",
-        metaData: {
-          targetText: targetText,
-          targetSelector: targetSelector
+        'type': "user",
+        'name': "UI click",
+        'metaData': {
+          'targetText': targetText,
+          'targetSelector': targetSelector
         }
       });
     };
