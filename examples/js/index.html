@@ -1,43 +1,25 @@
-<!doctype html>
+<!DOCTYPE html>
 <html>
-<head>
-  <script src="../../src/bugsnag.js" data-apikey="328dabd9a66ffd44465aa74e0d80ba80"></script>
-  <script>
-    Bugsnag.metaData = {
-      "User Details": {
-        name: "James Smith",
-        email: "james@example.com"
-      }
-    };
-  </script>
-</head>
+  <head>
+    <title>Bugsnag JS: Plain JS example</title>
 
-<body>
-  <h1>Bugsnag JS Example</h1>
-
-  <script>
-  function parentOfCrashyFunction (arg1, arg2) {
-    crashyFunction();
-  }
-
-  function crashyFunction () {
-    // Anonymous function
-    (function () {
-      try {
-        throw new Error("Something broke");
-      } catch (exception) {
-        Bugsnag.notifyException(exception);
-      }
-    })();
-  }
-
-  // Top-level function call
-  parentOfCrashyFunction("random", 123);
-
-  // Parse error (triggers window.onerror and stops script execution)
-  // parseError("
-  </script>
-
-  <a href="#" onclick="javascript:parentOfCrashyFunction('test', 456); return false;">Click to call crashyFunction</a>
-</body>
+    <!-- load bugsnag with a simple script tag -->
+    <script src="//d2wy8f7a9ursnm.cloudfront.net/v4/bugsnag.min.js"></script>
+  </head>
+  <body>
+    <h1>Bugsnag JS: Plain JS example</h1>
+    <p>
+      This page is a basic example of how to include bugsnag-js on a page via a
+      <code>&lt;script&gt;</code> tag.
+    </p>
+    <div id="buttons">
+        <h3>Send some errors by clicking below:
+        </h3>
+          <button type="button" id="jsHandled">SEND HANDLED</button>
+          <br>
+          <button type="button" id="jsUnhandled">SEND UNHANDLED</button>
+    </div>
+    <!-- in app.js you'll find syntax and configuration examples. -->
+    <script src="app.js"></script>
+  </body>
 </html>

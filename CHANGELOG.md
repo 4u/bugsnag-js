@@ -1,229 +1,138 @@
-Changelog
-=========
+# Changelog
 
-3.0.4 (2016-09-09)
------
+<!-- {entry_placeholder} -->
 
-- Create "Bugsnag loaded" breadcrumb [#179](https://github.com/bugsnag/bugsnag-js/pull/179)
+## 4.5.0 (2018-04-06)
 
-3.0.3 (2016-09-08)
------
+### Added
+- New breadcrumbs! Breadcrumbs are now left when requests are made using XMLHttpRequest (ajax) or fetch(). This works with all request libraries out of the box: jQuery, axios, superagent etc. Metadata includes HTTP method, request url and the status code (if available). By default network breadcrumbs are collected all with other autoBreadcrumb types. If you don't want to collect network breadcrumbs, set `networkBreadcrumbsEnabled: false`. (#334)
 
-- Added void return type (#178)
-  [Ole Martin Handeland](https://github.com/olemartinorg)
-  [#178](https://github.com/bugsnag/bugsnag-js/pull/178)
-- Improve notifyException definition (#175)
-  [Delisa Mason](https://github.com/kattrali)
-  [#175](https://github.com/bugsnag/bugsnag-js/pull/175)
-
-3.0.1 (2016-08-08)
------
-
-Minor README changes.
-
-3.0.0 (2016-08-05)
------
-
-This release adds support for automatic and custom breadcrumb tracking.
-Breadcrumbs replace the private implementation of "last event" tracking.
-It also removes support for the deprecated `userId` setting, which has been
-replaced by the `user` object.
-
-### Enhancements
-
-- Add support for sending "breadcrumbs" - notable events leading up to an error
-  [Christian Schlensker](https://github.com/wordofchristian)
-  [#149](https://github.com/bugsnag/bugsnag-js/pull/149)
-- Send device time in error payload
-  [#165](https://github.com/bugsnag/bugsnag-js/pull/165)
+### Changed
+- As part of #334 [envify](https://github.com/hughsk/envify) was added to compile out plugin "destroy" logic that was only required for tests.
 
 
-2.5.0 (2016-01-29)
------
+## 4.4.0 (2018-03-15)
 
-### Bug Fixes
+### Changed
+- Switch from a protocol-relative default for endpoint and sessionEndpoint to "https://". IE8/9 will attempt to send via http if the protocol of the current page is http. Otherwise all requests will now go via https unless configured otherwise (#333).
 
-- Clean up undefined property in window object when using `Bugsnag.noConflict()`
-  [Jacob Marshall](https://github.com/jacobmarshall)
-  [#115](https://github.com/bugsnag/bugsnag-js/issues/115)
-  [#116](https://github.com/bugsnag/bugsnag-js/pull/116)
-
-### Enhancements
-
-- Support XHR notify handlers
-  [Dimitar Tnokovski](https://github.com/tnokovski)
-  [#123](https://github.com/bugsnag/bugsnag-js/issues/123)
-  [#124](https://github.com/bugsnag/bugsnag-js/pull/124)
+### Fixed
+- Fix rollup bundling issue (switching to a forked version of cuid) (#331)
 
 
-2.4.9 (2015-12-10)
------
+## 4.3.1 (2018-03-07)
 
-### Bug Fixes
+### Changed
+- Perf improvements for breadcrumbs, most notably console log methods with lots of data (#329)
 
-- Fix an issue where null exceptions throw an error
-  [Rick Harrison](https://github.com/rickharrison)
-  [#110](https://github.com/bugsnag/bugsnag-js/pull/110)
 
-### Enhancements
+## 4.3.0 (2018-02-23)
 
-- Add configuration option for `maxDepth`
-  [Jacob Marshall](https://github.com/jacobmarshall)
-  [#114](https://github.com/bugsnag/bugsnag-js/pull/114)
+<!-- optional: if this is a significant release, describe it in a sentence or two -->
 
-2.4.8
------
+### Added
+- Stub exported types to appease Angular's JIT compiler in dev mode (#323)
+- Make hasStack(err) check more strict, making the unhandled rejection handler more robust and useful (#322)
 
--  Fix a permissions bug in Firefox extensions like Selenium
-   that trigger page events from native code.
+### Changed
+- Strip query strings and fragments from stackframe files (#328)
+- Switch to upstream version of `fast-safe-stringify`
 
-2.4.7
------
--  Fix a bug when Bugsnag is loaded with no script tags
--  First version available on npm as bugsnag-js
 
-2.4.6
------
--  Don't crash while serializing DOM nodes
+## 4.2.0 (2018-01-24)
 
-2.4.5
------
--  Fix a conflict with some AMD loaders
+This release fixes a few issues with the fetching of inline
+script content, particularly after the location has changed
+due to window.history methods.
 
-2.4.4
------
--  Fix an infinite loop in some cases.
+Unhandled promise rejection should also contain more actionable
+information (when the rejection reason is a DOMException, null,
+or undefined). Support for Bluebird promises was also added.
 
-2.4.3
------
--  Fix requestAnimationFrame polyfill.
+### Added
+- Support for unhandled bluebird promise rejections (#317)
+- Option to prevent IP collection (#313)
 
-2.4.2
------
--   Better support for method names on old IEs
+### Changed
+- Improved serialization of promise rejection reasons (#317)
+- If a string was thrown and not caught, use it as the error message (#319)
 
-2.4.1
------
--   Make common-js loading less eager
+### Fixed
+- Collection of inline script content improved (#320, #318)
 
-2.4.0
------
--   Add support for UMD/common-js loaders.
--   Add support for refreshing client-side rate-limit.
--   Add a warning about cross domain script errors.
 
-2.3.6
------
--   Ensure `beforeNotify` can access/modify the entire payload, allows for full
-    control of what data is sent to Bugsnag
+## 4.1.3 (2018-01-15)
 
-2.3.5
------
--   Support for bower.json
--   Fix issue caused by loading bugsnag asyncily
--   Support for full backtraces in setImmediate functions
+### Fixed
+- Fix call to non-existent `logger.log()` (credit @alexstrat #304)
 
-2.3.4
------
--   Fix issue with passing metadata to notifyException using metadata as name
 
-2.3.3
------
--   Prepare 'severity' feature for release
+## 4.1.2 (2018-01-09)
 
-2.3.2
------
--   Limit the number of exceptions per page load
+### Added
+- Session sending now respects `notifyReleaseStages` option
 
-2.3.1
------
--   Allow redacting script contents
+### Changed
+- Rename option `enableSessionTracking` -> `autoCaptureSessions` for consistency with other platforms
 
-2.3.0
------
--   Allow setting `Bugsnag.user`
--   Remove sourcemaps comment for now (it breaks Safari developer console)
 
-2.2.1
------
--   Don't send duplicate exceptions from the client
+## 4.1.1 (2018-01-06)
 
-2.2.0
------
--   Fix window.setTimeout with a string (broken by 2.1.0)
--   Use the first parameter of .notify() for grouping
--   Fix persistent metaData merging
+### Fixed
+- metaData and user were incorrectly attached to `report.app` (credit @tremlab #300)
 
-2.1.1
------
--   Track document.currentScript across async boundaries.
 
-2.1.0
------
--   Fix additional parameters to window.setTimeout etc.
+## 4.1.0 (2018-01-05)
 
-2.0.2
------
--   Remove accidentally exposed function.
+### Added
+- Support for tracking sessions and overall crash rate by setting `sessionTrackingEnabled` to `true`.
+In addition, sessions can be indicated manually using `bugsnagClient.startSession()` (#296)
+- `user` and `metaData` can now be supplied in configuration object (#299)
+- Bower and jspm support has been added as a result of #297 and some additional configuration
 
-2.0.1
------
--   Don't crash with selenium.
+### Changed
+- `dist` directory (built assets) are now stored in git (#297)
 
-2.0.0
------
--   Better grouping support.
 
-1.1.0
------
--   Add support for stacktraces on all modern browsers.
--   Add support for tracking most recent event fired.
+## 4.0.3 (2017-12-15)
 
-1.0.10
-------
--   Add support for sending column numbers and error objects from `window.onerror` in modern browsers
--   Add a `beforeNotify` callback to allow filtering of errors being sent to Bugsnag
+### Changed
+- Handle inline script content per older notifiers for consistent grouping (#289)
 
-1.0.9
------
--   Fixed bug with reading the `data-autonotify` setting
+### Fixed
+- Correctly capture the page contents when an inline script error happens (#289) 
 
-1.0.8
------
--   Add `autoNotify` setting to disable `window.onerror` notification
 
-1.0.7
------
--   Add support for setting a custom userId
+## 4.0.2 (2017-12-14)
 
-1.0.6
------
--   Add support for metrics tracking (optional)
+### Added
+- Add more type exports (#286)
+- Add frameworks section to README.md
+- Add READMEs to examples
 
-1.0.5
------
--   Add support for `notifyReleaseStages`, a whitelist for which releaseStages
-    should notify Bugsnag
+### Changed
+- Add more detail to JS example (credit @tremlab, #284)
+- Ensure empty/useless stackframes are removed
+- Removed arbitrary timeouts from tests to alleviate CI flakiness
 
-1.0.4
------
--   Allow the setting of custom error names on notifyException
+### Fixed
+- Expose `metaData` and `user` types on `Client` class (#287)
+- Give navigation details the correct type (some were marked as "manual")
 
-1.0.3
------
--   Added stacktrace approximation for browsers that don't support stacktraces
--   Added a cachebreaker to http requests
 
-1.0.2
------
--   Use image tag instead of script tag to make requests, for better
-    cross-browser support
+## 4.0.1 (2017-12-07)
 
-1.0.1
------
--   Fixed metaData serialization bug
--   Added test suite
+### Changed
+- Improve type definition for notify() error argument (credit @rokerkony)
+- Remove process.env.NODE_ENV inferred releaseStage
+- Sidestep uglify's drop_compat option to prevent it from breaking bugsnag
 
-1.0.0
------
--   First public release
+
+## 4.0.0 (2017-12-04)
+
+Version 4 is a milestone release. A complete re-write and modernization for Bugsnag's JS error reporting.
+
+See UPGRADING.md for migrating from v3 and see docs.bugsnag.com for full documentation.
+
+🚀
+

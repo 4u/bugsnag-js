@@ -1,5 +1,5 @@
 node_modules
-test.html
-*.min.js
-docs
-dist
+.nyc_output
+coverage
+bin/cc-test-reporter
+types/test/fixtures/app.*
